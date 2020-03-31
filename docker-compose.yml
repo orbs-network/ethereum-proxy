@@ -1,0 +1,9 @@
+version: '3'
+
+services: 
+    proxy:
+        image: orbsnetwork/ethereum-proxy
+        ports:
+            - 80:80
+        environment: 
+            ETHEREUM_ENDPOINT: $ETHEREUM_ENDPOINT
