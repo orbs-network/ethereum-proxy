@@ -1,5 +1,7 @@
 # Ethereum proxy
 
+Proxy service for wrapping an external Ethereum endpoint like Infura and still use it as part of an internal load balancer (like AWS ELB).
+
 ## Building
 
 `./docker-build.sh`
