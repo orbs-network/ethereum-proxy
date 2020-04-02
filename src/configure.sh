@@ -7,5 +7,9 @@ server {
     location / {
         proxy_pass $ETHEREUM_ENDPOINT;
     }
+
+    location /status.json {
+        alias /opt/orbs/status/status.json;
+    }
 }
 EOF

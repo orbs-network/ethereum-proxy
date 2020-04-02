@@ -1,28 +1,36 @@
-const execSync = require('child_process').execSync;
-const { getLatestBlockHeaders, getMachineCurrentTime } = require('./ethereum-lib');
+const fetch = require("node-fetch");
+const { writeFileSync, mkdirSync } = require("fs");
+const { dirname } = require("path");
 
-function getEthSyncing() {
-    const result = execSync(`curl -s --data '{"method":"eth_syncing","params":[],"id":1,"jsonrpc":"2.0"}' -H "Content-Type: application/json" -X POST http://localhost:8545`);
-    const resultAsString = result.toString();
-    return JSON.parse(resultAsString);
+async function post(endpoint, data) {
+    const result = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+    });
+    return result.json();
 }
 
-function getParityChainStatus() {
-    const result = execSync(`curl -s --data '{"method":"parity_chainStatus","params":[],"id":1,"jsonrpc":"2.0"}' -H "Content-Type: application/json" -X POST http://localhost:8545`);
-    const resultAsString = result.toString();
-    return JSON.parse(resultAsString);
+async function getLatestBlockHeaders(endpoint) {
+    return post(endpoint, {"method":"eth_getBlockByNumber","params":["latest", false],"id":1,"jsonrpc":"2.0"});
 }
 
-if (!module.parent) {
+function getMachineCurrentTime() {
+    return Math.floor(Date.now() / 1000);
+}
+
+async function getEthSyncing(endpoint) {
+    return post(endpoint, {"method":"eth_syncing","params":[],"id":1,"jsonrpc":"2.0"});
+}
+
+async function main() {
     const [ endpoint, output ] = process.argv.slice(2);
 
-    console.log(endpoint, output);
-
     // Check if ethereum is synced
-    const ethSyncing = getEthSyncing();
-    const parityChainStatus = getParityChainStatus();
-
-    const latestBlock = getLatestBlockHeaders();
+    const ethSyncing = await getEthSyncing(endpoint);
+    const latestBlock = await getLatestBlockHeaders(endpoint);
     const latestBlockTimestamp = parseInt(latestBlock.result.timestamp);
     const currentMachineTimestamp = getMachineCurrentTime();
 
@@ -38,16 +46,25 @@ if (!module.parent) {
         returnValue.message = 'Ethereum is now fully synced with the mainnet!';
     }
 
-    if (ethSyncing.result === false) { // && parityChainStatus.result.blockGap === null) { // This means ethereum is synced with the network
-    } else {
+    if (!ethSyncing.result) {
         if (ethSyncing.result.highestBlock === '0x0') {
             returnValue.message = 'Ethereum is downloading an initial snapshot, and will soon start syncing blocks';
         } else {
             returnValue.message = 'Ethereum sync in progress';
             returnValue.blocksRemainingToSync = parseInt(ethSyncing.result.highestBlock) - parseInt(ethSyncing.result.currentBlock);
-            returnValue.blockGap = parityChainStatus.result.blockGap;
         }
     }
 
     console.log(JSON.stringify(returnValue));
+
+    if (output) {
+        try {
+            mkdirSync(dirname(output));
+        } catch (e) { }
+        writeFileSync(output, JSON.stringify(returnValue));
+    }
+}
+
+if (!module.parent) {
+    main();
 }

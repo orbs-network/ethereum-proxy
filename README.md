@@ -8,7 +8,10 @@
 
 ```bash
 export ETHEREUM_ENDPOINT=https://mainnet.infura.io/v3/$PROJECT_ID
-docker-compose up
+docker-compose up -d
+
+# healtcheck
+curl -L -s http://localhost/status.json
 ```
 
 ## Testing
