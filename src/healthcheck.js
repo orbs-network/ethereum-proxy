@@ -31,7 +31,7 @@ async function main() {
     // Check if ethereum is synced
     const ethSyncing = await getEthSyncing(endpoint);
     const latestBlock = await getLatestBlockHeaders(endpoint);
-    const latestBlockTimestamp = parseInt(latestBlock.result.timestamp);
+    const latestBlockTimestamp = latestBlock.result && parseInt(latestBlock.result.timestamp);
     const currentMachineTimestamp = getMachineCurrentTime();
 
     const returnValue = {
