@@ -1,4 +1,4 @@
-version: '3'
+version: '2'
 
 services: 
     proxy:
@@ -7,6 +7,7 @@ services:
             - 8545:80
         environment: 
             ETHEREUM_ENDPOINT: $ETHEREUM_ENDPOINT
+        mem_limit: 256000000
 
     healthcheck:
         image: orbsnetwork/ethereum-healthcheck
@@ -14,3 +15,6 @@ services:
             - 8080:8080
         environment:
             ETHEREUM_ENDPOINT: http://proxy/
+        mem_limit: 128000000
+        links:
+            - proxy
