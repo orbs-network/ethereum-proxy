@@ -4,6 +4,13 @@ services:
     proxy:
         image: orbsnetwork/ethereum-proxy
         ports:
-            - 80:80
+            - 8545:80
         environment: 
             ETHEREUM_ENDPOINT: $ETHEREUM_ENDPOINT
+
+    healthcheck:
+        image: orbsnetwork/ethereum-healthcheck
+        ports:
+            - 8080:8080
+        environment:
+            ETHEREUM_ENDPOINT: http://proxy/
